@@ -8,7 +8,7 @@ let s:unite_source = {
 function! s:unite_source.gather_candidates(args, context)
   let tag = '"[".v:val."]"'
   return values(map(
-        \ copy(metarw#sn#get_list()),
+        \ copy(simplenote#get_list()),
         \ '{
         \ "word": join(map(copy(v:val.tags),tag),"").v:val.title,
         \ "source": "sn",
