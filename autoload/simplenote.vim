@@ -102,3 +102,13 @@ function! simplenote#update(key, text)
   return s:put_note(a:key, a:text)
 endfunction
 
+function! simplenote#get_tags()
+  if len(simplenote#auth())
+    return -1
+  endif
+  let url = printf('https://simple-note.appspot.com/api2/tags?auth=%s&email=%s', s:token, g:metarw_simplenote_email)
+  let res = http#get(url)
+  let json = json#decode(iconv(res.content, 'utf-8', &encoding))
+
+  return map(json.tags,"v:val.name")
+endfunction

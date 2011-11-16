@@ -6,9 +6,28 @@ let s:unite_source = {
       \ }
 
 function! s:unite_source.gather_candidates(args, context)
+  let notes = copy(simplenote#get_list())
+  if !empty(a:args)
+    let new_notes = {}
+    let flag = 0
+    for note in keys(notes)
+      for arg in a:args
+        if index(notes[note].tags,arg) >= 0
+          let flag = 1
+        else
+          let flag = 0
+          break
+        endif
+      endfor
+      if flag == 1
+        let new_notes[note] = notes[note]
+      endif
+    endfor
+    let notes = new_notes
+  end
   let tag = '"[".v:val."]"'
   return values(map(
-        \ copy(simplenote#get_list()),
+        \ notes,
         \ '{
         \ "word": join(map(copy(v:val.tags),tag),"").v:val.title,
         \ "source": "sn",
