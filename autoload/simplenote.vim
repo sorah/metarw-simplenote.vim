@@ -11,7 +11,7 @@ function! simplenote#auth()
     let g:metarw_simplenote_email = input('email: ')
   endif
   let password = inputsecret('password: ')
-  let creds = base64#b64encode(printf('email=%s&password=%s', g:metarw_simplenote_email, password))
+  let creds = base64#b64encode(printf('email=%s&password=%s', http#encodeURI(g:metarw_simplenote_email), password))
   let res = http#post('https://simple-note.appspot.com/api/login', creds)
   if res.header[0] == 'HTTP/1.1 200 OK'
     let s:token = res.content
@@ -24,7 +24,7 @@ function! simplenote#get_list()
   if len(simplenote#auth())
     return {"error": "unauthorized"}
   endif
-  let url = printf('https://simple-note.appspot.com/api/index?auth=%s&email=%s', s:token, g:metarw_simplenote_email)
+  let url = printf('https://simple-note.appspot.com/api/index?auth=%s&email=%s', s:token, http#encodeURI(g:metarw_simplenote_email))
   let res = http#get(url)
   let nodes = json#decode(iconv(res.content, 'utf-8', &encoding))
   for node in nodes
@@ -41,7 +41,7 @@ function! simplenote#get_note(key)
   if len(simplenote#auth())
     return {"error": "unauthorized"}
   endif
-  let url = printf('https://simple-note.appspot.com/api2/data/%s?auth=%s&email=%s', a:key, s:token, g:metarw_simplenote_email)
+  let url = printf('https://simple-note.appspot.com/api2/data/%s?auth=%s&email=%s', a:key, s:token, http#encodeURI(g:metarw_simplenote_email))
   let res = http#get(url)
   let json =  json#decode(iconv(res.content, 'utf-8', &encoding))
   let lines = split(iconv(json.content, 'utf-8', &encoding), "\n")
@@ -51,7 +51,7 @@ function! simplenote#get_note(key)
 endfunction
 
 function! simplenote#get_text(key)
-  let url = printf('https://simple-note.appspot.com/api/note?key=%s&auth=%s&email=%s', a:key, s:token, g:metarw_simplenote_email)
+  let url = printf('https://simple-note.appspot.com/api/note?key=%s&auth=%s&email=%s', a:key, s:token, http#encodeURI(g:metarw_simplenote_email))
   let res = http#get(url)
   if res.header[0] == 'HTTP/1.1 200 OK'
     return ['done', iconv(res.content, 'utf-8', &encoding)]
@@ -60,7 +60,7 @@ function! simplenote#get_text(key)
 endfunction
 
 function! simplenote#delete(key)
-    let url = printf('https://simple-note.appspot.com/api/delete?key=%s&auth=%s&email=%s', a:key, s:token, g:metarw_simplenote_email)
+    let url = printf('https://simple-note.appspot.com/api/delete?key=%s&auth=%s&email=%s', a:key, s:token, http#encodeURI(g:metarw_simplenote_email))
     let res = http#get(url)
     if res.header[0] == 'HTTP/1.1 200 OK'
       call remove(s:notes, a:key)
@@ -71,9 +71,9 @@ endfunction
 
 function! s:put_note(key,text)
   if type(a:key) == type("")
-    let url = printf('https://simple-note.appspot.com/api2/data/%s?auth=%s&email=%s', a:key, s:token, g:metarw_simplenote_email)
+    let url = printf('https://simple-note.appspot.com/api2/data/%s?auth=%s&email=%s', a:key, s:token, http#encodeURI(g:metarw_simplenote_email))
   else
-    let url = printf('https://simple-note.appspot.com/api2/data?auth=%s&email=%s', s:token, g:metarw_simplenote_email)
+    let url = printf('https://simple-note.appspot.com/api2/data?auth=%s&email=%s', s:token, http#encodeURI(g:metarw_simplenote_email))
   endif
   let content = iconv(a:text, &encoding, 'utf-8')
   let json = iconv(json#encode({
@@ -84,14 +84,15 @@ function! s:put_note(key,text)
   if res.header[0] == 'HTTP/1.1 200 OK'
     let lines = split(content, "\n")
     let title = len(lines) > 0 ? lines[0] : ''
+    let key = json#decode(iconv(res.content, 'utf-8', &encoding)).key
     if type(a:key) == type("")
-      let s:notes[a:key].title = title
+      let s:notes[key].title = title
     else
       let s:notes[a:key] = {"title": title, "tags": []}
     endif
-    return 'success'
+    return ['success', key]
   endif
-  return res.header[0]
+  return ['error',res.header[0]]
 endfunction
 
 function! simplenote#create(text)
@@ -106,7 +107,7 @@ function! simplenote#get_tags()
   if len(simplenote#auth())
     return -1
   endif
-  let url = printf('https://simple-note.appspot.com/api2/tags?auth=%s&email=%s', s:token, g:metarw_simplenote_email)
+  let url = printf('https://simple-note.appspot.com/api2/tags?auth=%s&email=%s', s:token, http#encodeURI(g:metarw_simplenote_email))
   let res = http#get(url)
   let json = json#decode(iconv(res.content, 'utf-8', &encoding))
 

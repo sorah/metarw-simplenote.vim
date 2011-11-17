@@ -47,16 +47,16 @@ function! metarw#sn#write(fakepath, line1, line2, append_p)
     else
       let res = simplenote#create(text)
     endif
-    if res == 'success'
+    if res[0] == 'success'
       if len(l[1]) == 0
-        let key = res.content
+        let key = res[1]
         silent! exec 'file '.printf('sn:%s', escape(key, ' \/#%'))
         set nomodified
       endif
       return ['done', '']
     endif
   endif
-  return ['error', res]
+  return ['error', res[1]]
 endfunction
 
 
