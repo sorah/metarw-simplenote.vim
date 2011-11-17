@@ -113,3 +113,15 @@ function! simplenote#get_tags()
 
   return map(json.tags,"v:val.name")
 endfunction
+
+function! simplenote#search(query)
+  if len(simplenote#auth())
+    return -1
+  endif
+  let url = printf('https://simple-note.appspot.com/api/search?auth=%s&email=%s&query=%s',
+                  \ s:token, http#encodeURI(g:metarw_simplenote_email),
+                  \ http#encodeURI(a:query))
+  let res = iconv(http#get(url).content, 'utf-8', &encoding)
+  let json = json#decode(res)
+  return json["Response"]["Results"]
+endfunction
