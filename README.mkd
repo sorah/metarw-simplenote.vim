@@ -6,6 +6,7 @@ Access to simplenote by vim using unite and metarw.
 
 * webapi-vim <https://github.com/mattn/webapi-vim>
 * vim-metarw <https://github.com/kana/vim-metarw>
+* unite.vim <https://github.com/Shougo/unite.vim>
 
 ## Install
 
@@ -14,6 +15,7 @@ Access to simplenote by vim using unite and metarw.
     NeoBundle "mattn/webapi-vim"
     NeoBundle "mattn/vim-metarw"
     NeoBundle "sorah/metarw-simplenote.vim"
+    NeoBundle "Shougo/unite.vim"
 
 ## Author
 
