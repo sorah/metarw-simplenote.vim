@@ -10,8 +10,8 @@ function! s:unite_source.gather_candidates(args, context)
         \ '{
         \ "word": v:val,
         \ "source": "sn_tag",
-        \ "kind": "command",
-        \ "action__command": "Unite sn:".v:val,
+        \ "kind": "source",
+        \ "action__source_name": ["sn",v:val],
         \ }')
 endfunction
 
